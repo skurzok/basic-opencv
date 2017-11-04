@@ -44,6 +44,7 @@ class Selection: public BasicImage
 public:
     enum {UNCHECKED = -128, FILLED = 127};
     enum SaveAsTextMethod {ALL_PIXELS, SELECTED_PIXELS};
+    Selection(){}
     Selection(int rows, int columns):
         BasicImage(rows, columns)
     {

@@ -19,20 +19,6 @@ ostream & operator<<(ostream & stream, const cv::Vec3b & v)
 }
 
 
-class EuclideanDistance
-{
-public:
-    explicit EuclideanDistance(float threshold):
-        threshold_(threshold)
-    {}
-    bool operator()(const cv::Vec3b & base, const cv::Vec3b & candidate)
-    {// http://answers.opencv.org/question/68718/distance-between-images-pixel-by-pixel/
-        return cv::norm(base, candidate) < threshold_;
-    }
-private:
-    float threshold_;
-};
-
 
 void fast_test()
 {
