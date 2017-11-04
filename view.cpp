@@ -37,9 +37,17 @@ void fast_test()
 
 int main(int argc, char **argv) {
     
-    fast_test();
     if (argc != 3) {
-        printf("usage: Opencv_Test <Image_Path> <Output_Path>\n");
+        printf("usage: view input_image commands\n");
+        return -1;
+    }
+    
+    auto image = ia::Image(argv[1]);
+    
+    auto out = ia::ImageAnalysis::execute(image, argv[2]);
+    if (out != "")
+    {
+        cout << "ERROR: " << out;
         return -1;
     }
 

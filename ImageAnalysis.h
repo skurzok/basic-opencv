@@ -99,6 +99,10 @@ public:
                 command = command.substr(save.size());
                 removeCharsFromString(command, "() ");
                 auto args = split(command, ',');
+                if (args.size() == 0)
+                {
+                    return "No file name given in save";
+                }
                 auto path = args[0];
                 if (args.size() == 1)
                 {
@@ -128,6 +132,10 @@ public:
             {
                 command = command.substr(display.size());
                 if (cmd_num == 0)
+                {
+                    image.Show("image");
+                }
+                else
                 {
                     output.Show("image");
                 }
