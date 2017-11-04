@@ -30,13 +30,15 @@ private:
     float threshold_;
 };
 
+
+enum {UNCHECKED = -128, FILLED = 127};
+
 template<class T>
-cv::Mat findRegion(const cv::Mat image, int x, int y, T metric)
+cv::Mat findRegion(const cv::Mat & image, int x, int y, T metric)
 {
     struct Cord{int x, y;};
     std::vector<Cord> to_check(1, Cord{x, y});
     
-    enum {UNCHECKED = -128, FILLED = 127};
     cv::Mat status(image.rows, image.cols, CV_8SC1);
     status.setTo(UNCHECKED);  // https://stackoverflow.com/questions/4337902/how-to-fill-opencv-image-with-one-solid-color
     
@@ -80,6 +82,30 @@ cv::Mat findRegion(const cv::Mat image, int x, int y, T metric)
     return status;
 }
 
+cv::Mat findPerimeter(const cv::Mat & region)
+{
+    cv::Mat perimeter(region.rows, region.cols, CV_8SC1);
+    perimeter.setTo(UNCHECKED);
+    
+    int i, j;
+    for (i = 1; i < region.rows - 1; ++i) {
+        for (j = 1; j < region.cols - 1; ++j) {
+            
+            if (region.at<char>(i, j) == FILLED &&
+                (region.at<char>(i + 1, j) == UNCHECKED ||
+                region.at<char>(i - 1, j) == UNCHECKED ||
+                region.at<char>(i, j + 1) == UNCHECKED ||
+                region.at<char>(i, j - 1) == UNCHECKED))
+            {
+                perimeter.at<char>(i, j) = FILLED;
+            }
+        }
+    }
+    
+    return perimeter;
+    //TODO: What if whole input is single region?
+}
+
 void fast_test()
 {
     Mat image;
@@ -88,8 +114,10 @@ void fast_test()
     //show_mat(image, "Input");
 
     image = findRegion(image, 10, 10, EuclideanDistance(50));
+    show_mat(image, "Output1");
+    image = findPerimeter(image);
 
-    show_mat(image, "Output");
+    show_mat(image, "Output2");
 }
 
 int main(int argc, char **argv) {
