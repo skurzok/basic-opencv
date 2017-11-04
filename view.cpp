@@ -43,8 +43,10 @@ void fast_test()
     ia::Selection sec = ia::ImageAnalysis::findRegion(image, 10, 10, EuclideanDistance(50));
     sec.Show("Output1");
     sec = ia::ImageAnalysis::findPerimeter(sec);
+    sec.SaveAsText("out1.txt", ia::Selection::SELECTED_PIXELS);
 
     sec.Show("Output2");
+    sec.SaveAsText("out2.txt", ia::Selection::ALL_PIXELS);
 }
 
 int main(int argc, char **argv) {

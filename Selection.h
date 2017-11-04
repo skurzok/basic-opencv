@@ -1,5 +1,3 @@
-
-
 #include <opencv2/opencv.hpp>
 
 namespace image_analysis_service
@@ -45,6 +43,7 @@ class Selection: public BasicImage
 {
 public:
     enum {UNCHECKED = -128, FILLED = 127};
+    enum SaveAsTextMethod {ALL_PIXELS, SELECTED_PIXELS};
     Selection(int rows, int columns):
         BasicImage(rows, columns)
     {
@@ -59,6 +58,11 @@ public:
     {
         return image_.at<char>(x, y);
     }
+    
+    void SaveAsText(const std::string & path, SaveAsTextMethod method) const;
+private:
+    void SaveAllPixels(std::ostream & stream) const;
+    void SaveSelected(std::ostream & stream) const;
 };
 
 class Image: public BasicImage
