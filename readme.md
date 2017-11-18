@@ -52,6 +52,12 @@ Classes `Image` and `Selection` shares some methods and internal representation,
 - `bool select(std::vector<Point> & points, int i, int j, cv::Mat & paths, int path_id)` Method adds given point to sequence of points and recursively check if it is possible to close loop of points drawing path in directon of adjacent point.
 If some direction does not give a result, point in that direction is removed from sequence and other direction is checked.
 - `void addSmoothPath(Selection & selection, const std::vector<Point> & path, int step)`  Draw line between every {step} points 
-- `void LinearSmoother::fillLinear(const Point & a, const Point & b, Selection & selection)` Method for drawing line between two given points
+- `void fillLinear(const Point & a, const Point & b, Selection & selection)` Method for drawing line between two given points
 
+### Possible improvements
+- Linear interpolation is simplest possible algorithm for this task so it definitelty needs to be changed. Current data represetation (vector of points in perimeter) alows easly to use Catmull–Rom spline interpolation.
+- Detecting of 'sharp edges' and use them as point in interpolation could result in better fit to original perimeter. Such detection could by done by finding spikes of derivative of points difference (absolute value (length) of second derivative of positon with respect to point index).
+- finding sets of adjacent points in perimeter could be optimized. Recursion may be removed by using queue of points to check. Large numer points may result in stack overflow in current implementation
+- sequence of points could be found using ex. Dijkstra algorithm. Current implementation may roll back almost to the beginning in pessimistic cases, and then repeat most of calculations. Dijkstra or A* would reduce pessimistic complexity.
+- calculation of EuclideanDistance could be optimized by removing square root calculation. We can compare to sum of squares to square of threshold distance.
 
