@@ -19,11 +19,13 @@ private:
     
     static const std::string find_region_str;
     static const std::string find_perimeter_str;
+    static const std::string find_smooth_perimeter_str;
     static const std::string save_str;
     static const std::string display_str;
     
     static void doFindRegion(std::string command, const Image & image, Selection & output);
     static void doFindPerimeter(Selection & output);
+    static void doFindSmoothPerimeter(Selection & output);
     static void doSave(std::string command, Selection & output);
     static void doFindPerimeter(const Image & image, Selection & output, int cmd_num);
     
@@ -75,6 +77,7 @@ private:
     
 
     static Selection findPerimeter(const Selection & region);
+    static Selection findSmoothPerimeter(const Selection & region);
 
 
 };
