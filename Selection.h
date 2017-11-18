@@ -32,9 +32,18 @@ public:
     {
         cv::imwrite(path, image_);
     }
+    bool empty()
+    {
+        return image_.empty();
+    }
 protected:
     explicit BasicImage()
     {}
+    explicit BasicImage(cv::Mat & image):
+        image_(image)
+    {
+    }
+    
     
     cv::Mat image_;
 };
@@ -69,15 +78,28 @@ private:
 class Image: public BasicImage
 {
 public:
-    explicit Image(const std::string & path)
+    static Image fromFile(const std::string & path)
     {
-        image_ = cv::imread(path, 1);
+        try
+        {
+            cv::Mat image = cv::imread(path);
+            return Image(image);
+        }
+        catch(...)
+        {
+            throw std::runtime_error("Cannot open file: \"" + path + "\"");
+        }
     }
-    
     const cv::Vec3b & at(int x, int y) const
     {
         return image_.at<cv::Vec3b>(x, y);
     }
+private:
+    explicit Image(cv::Mat & image):
+        BasicImage(image)
+    {
+    }
 };
 
 }
+

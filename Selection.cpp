@@ -9,7 +9,11 @@ namespace image_analysis_service
 
 void Selection::SaveAsText(const std::string & path, SaveAsTextMethod method) const
 {
-    ofstream file(path, std::ofstream::out); //TODO: file open checks
+    ofstream file(path, std::ofstream::out);
+    if (!file.is_open())
+    {
+        throw std::runtime_error("Canot open file \"" + path + "\" for saving");
+    }
     file << "rows: " << image_.rows << endl;
     file << "cols: " << image_.cols << endl;
     if (method == ALL_PIXELS)
@@ -21,6 +25,7 @@ void Selection::SaveAsText(const std::string & path, SaveAsTextMethod method) co
         SaveSelected(file);
     }
 }
+
 
 void Selection::SaveAllPixels(std::ostream & stream) const
 {

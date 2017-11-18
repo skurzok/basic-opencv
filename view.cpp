@@ -18,22 +18,18 @@ ostream & operator<<(ostream & stream, const cv::Vec3b & v)
     return stream;
 }
 
+//void fast_test()
+//{
+//    auto image = ia::Image::fromFile("edges.png");
+//
+//    ia::Selection sec = ia::ImageAnalysis::findRegion(image, 10, 10, EuclideanDistance(50));
+//    sec.Show("Output1");
+//    sec = ia::ImageAnalysis::findPerimeter(sec);
+ //   sec.SaveAsText("out1.txt", ia::Selection::SELECTED_PIXELS);
 
-
-void fast_test()
-{
-    auto image = ia::Image("edges.png");
-    
-    //show_mat(image, "Input");
-
-    ia::Selection sec = ia::ImageAnalysis::findRegion(image, 10, 10, EuclideanDistance(50));
-    sec.Show("Output1");
-    sec = ia::ImageAnalysis::findPerimeter(sec);
-    sec.SaveAsText("out1.txt", ia::Selection::SELECTED_PIXELS);
-
-    sec.Show("Output2");
-    sec.SaveAsText("out2.txt", ia::Selection::ALL_PIXELS);
-}
+ //   sec.Show("Output2");
+//    sec.SaveAsText("out2.txt", ia::Selection::ALL_PIXELS);
+//}
 
 int main(int argc, char **argv) {
     
@@ -42,14 +38,25 @@ int main(int argc, char **argv) {
         return -1;
     }
     
-    auto image = ia::Image(argv[1]);
-    
-    auto out = ia::ImageAnalysis::execute(image, argv[2]);
-    if (out != "")
+    try
     {
-        cout << "ERROR: " << out;
-        return -1;
+        auto image = ia::Image::fromFile(argv[1]);
+        
+        ia::ImageAnalysis::execute(image, argv[2]);
+    }
+    catch (cv::Exception& ex)
+    {
+        std::cout << "OpenCV exception: "s + ex.what() << std::endl;
+        return 1;
+    }
+    catch (std::runtime_error & ex)
+    {
+        std::cout << "ERROR: "s + ex.what() << std::endl;
+        return 1;
     }
 
     return 0;
 }
+
+
+
