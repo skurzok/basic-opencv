@@ -1,3 +1,6 @@
+#ifndef IMAGE_ANALYSIS_SERVICE_SELECTION_H
+#define IMAGE_ANALYSIS_SERVICE_SELECTION_H
+
 #include <opencv2/opencv.hpp>
 
 namespace image_analysis_service
@@ -103,3 +106,4 @@ private:
 
 }
 
+#endif

@@ -29,11 +29,11 @@ Allowed commands are 'find_region', 'find_perimeter', 'save', 'display'.
 
 ## Code documentation
 
-### class Image
+### class `Image`
  - represents input image
  - allows to load, save and display image
  
-### class Selection
+### class `Selection`
  - represents region or perimeter
  - allows to load, save and display image
 
@@ -42,3 +42,16 @@ Classes `Image` and `Selection` shares some methods and internal representation,
 ### class `ImageAnalysis`
 - `findRegion(const Image & image, int x, int y, T metric)` static method themplate, returns `Selection` with region starting in given x,y with pixels that maximum distance in euclidean space is equal to 'distance'.
 - `findPerimeter(const Selection & region)` static method, returns `Selection` with perimter of given region
+
+
+### class `LinearSmoother`
+- `LinearSmoother(int minPathSize = 16, int step = 5)` `ctor` Constructor, sets minPathSize and step variables. minPathSize is a minimal size of perimeter that is not considered as artifact. Step is a smoothing factor, described below.
+- `Selection Apply(const Selection & perimeter)` Interface to smoother, accepts perimeter, and return smoothed perimter.  First, method searhch for sets of connected points of current perimeter, then if set is large enouth (small sets are considered artifacts) create sequence of adjacent points. Finaly draw line between every `step` points
+- `int mark(int i, int j, const Selection & perimeter, cv::Mat & paths, int path_id)` Method used for finding sets of adjacent points in perimeter. Assigns given points to given set (by id) and recursively marks all adjacent points if they are in perimeter
+- `std::vector<Point> makeSequence(cv::Mat & paths, int path_id, const Point & start)` Method for finding closed loop of points for given connected set of points. Perimeter may consist of larger group of adjacent points, so finding right sequence may be not trival.
+- `bool select(std::vector<Point> & points, int i, int j, cv::Mat & paths, int path_id)` Method adds given point to sequence of points and recursively check if it is possible to close loop of points drawing path in directon of adjacent point.
+If some direction does not give a result, point in that direction is removed from sequence and other direction is checked.
+- `void addSmoothPath(Selection & selection, const std::vector<Point> & path, int step)`  Draw line between every {step} points 
+- `void LinearSmoother::fillLinear(const Point & a, const Point & b, Selection & selection)` Method for drawing line between two given points
+
+
