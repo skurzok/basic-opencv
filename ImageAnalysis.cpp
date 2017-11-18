@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <cmath>
 
 #include "utils.h"
 
@@ -214,6 +215,14 @@ Selection ImageAnalysis::findPerimeter(const Selection & region)
 struct Point{
     int x, y;
 };
+bool operator==(const Point & lhs, const Point & rhs)
+{
+    return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+bool operator!=(const Point & lhs, const Point & rhs)
+{
+    return !(lhs == rhs);
+}
 
 enum{
     DEADEND,
@@ -274,11 +283,6 @@ std::vector<Point> makeSequence(cv::Mat & paths, int path_id, const Point & star
     //std::cout << "start is at" << start.x << "," << start.y << std::endl;
     std::vector<Point> points;
     int td = select(points, start.x, start.y, paths, path_id);
-    std::cout << "points" << std::endl;
-    for (const auto & p : points)
-    {
-        std::cout << p.x << ", " << p.y << "   ";
-    }
     return points;
 }
 
@@ -309,18 +313,85 @@ int mark(int i, int j, const Selection & perimeter, cv::Mat & paths, int path_id
     return total;
 }
 
+void fillLinear(const Point & a, const Point & b, Selection & selection)
+{
+    Point d{b.x - a.x, b.y - a.y};
+    char method = 'n';
+    
+    if (d.x == 0 && d.y != 0)
+    {
+        method = 'y';
+    }
+    else if (d.y == 0 && d.x != 0)
+    {
+        method = 'x';
+    }
+    else
+    {
+        if (std::abs(d.y) > std::abs(d.x))
+        {
+            method = 'y';
+        }
+        else
+        {
+            method = 'x';
+        }
+    }
+    auto ca = a;
+    auto cb = b;
+    
+    selection.at(ca.x, ca.y) = Selection::FILLED;
+    selection.at(cb.x, cb.y) = Selection::FILLED;
+    if (method == 'x')
+    {
+        if (d.x < 0)
+        {
+            std::swap(ca, cb);
+        }
+        for (int x = ca.x; x <= cb.x; ++x)
+        {
+            int y = ca.y + d.y * (x - ca.x) / float(d.x);
+            selection.at(x, y) = Selection::FILLED;
+        }
+    }
+    else if (method == 'y')
+    {
+        if (d.y < 0)
+        {
+            std::swap(ca, cb);
+        }
+        for (int y = ca.y; y <= cb.y; ++y)
+        {
+            int x = ca.x + d.x * (y - ca.y) / d.y;
+            selection.at(x, y) = Selection::FILLED;
+        }
+    }
+}
 
-std::vector<Point> getBiggestPath(const Selection & perimeter) //TODO: retun all paths bigger then some limit
+void addSmoothPath(Selection & selection, const std::vector<Point> & path, int step = 5)
+{
+    for (int i = 0; i < path.size(); i+= step)
+    {
+        if (i + step < path.size())
+        {
+            fillLinear(path[i], path[i + step], selection);
+        }
+        else
+        {
+            fillLinear(path[i], path[0], selection);
+        }
+    }
+}
+
+Selection smoothPerimeters(const Selection & perimeter) //TODO: retun all paths bigger then some limit
 {
     // check selection and find all (biggest) path
     
     cv::Mat paths(perimeter.rows(), perimeter.cols(), CV_32S);
-    
     std::vector<int> sizes(1, 0);
     std::vector<Point> points(1, Point{-1, -1});
     for (int i = 1; i < perimeter.rows() - 1; ++i) {
         for (int j = 1; j < perimeter.cols() - 1; ++j) {
-            
             if (perimeter.at(i, j) == Selection::FILLED && paths.at<int>(i,j) == 0)
             {
                 int s = mark(i, j, perimeter, paths, sizes.size()); //TODO: consider different implementetion, current may result in stack overflow
@@ -329,18 +400,16 @@ std::vector<Point> getBiggestPath(const Selection & perimeter) //TODO: retun all
             }
         }
     }
+    
+    
+    Selection smooth(perimeter.rows(), perimeter.cols());
+    
     int biggest_path_id = std::distance(sizes.begin(), std::max_element(sizes.begin(), sizes.end()));
     
-
-//paths.setTo(1000000, paths == biggest_path_id); 
-
-       // namedWindow("paths", cv::WINDOW_AUTOSIZE);
-      ///  imshow("paths", paths);
-      //  cv::waitKey(0);
+    auto sequence = makeSequence(paths, biggest_path_id, points[biggest_path_id]);
     
-    auto points = makeSequence(paths, biggest_path_id, points[biggest_path_id]);
-    
-    
+    addSmoothPath(smooth, sequence);
+    return smooth;
 }
 
 Selection ImageAnalysis::findSmoothPerimeter(const Selection & region)
@@ -372,7 +441,7 @@ Selection ImageAnalysis::findSmoothPerimeter(const Selection & region)
             }
         }
     }
-    getBiggestPath(perimeter);
+    perimeter = smoothPerimeters(perimeter);
     return perimeter;
     //TODO: What if whole input is single region?
 }
